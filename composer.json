@@ -7,7 +7,7 @@
     "require": {},
     "autoload": {
         "psr-4": {
-						"Facecode\\CacheManager\\": "src"
+		"Facecode\\CacheManager\\": "src"
         }
     }
 }
