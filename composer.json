@@ -1,0 +1,13 @@
+{
+    "name": "facecode/cachemanager",
+    "description": "Temporary key-value storage for data cashing on disc",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+						"Facecode\\CacheManager\\": "src"
+        }
+    }
+}
