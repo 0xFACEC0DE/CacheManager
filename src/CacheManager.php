@@ -1,6 +1,6 @@
 <?php
 
-namespace Facecode/CacheManager;
+namespace Facecode\CacheManager;
 
 /**
  * Class CacheManager
@@ -12,12 +12,12 @@ class CacheManager
     /**
      * @var bool|resource
      */
-    private $filePointer;
+    protected $filePointer;
 
     /**
      * @var int|null
      */
-    private $size;
+    protected $size;
 
     /**
      * CacheManager constructor.
@@ -34,42 +34,50 @@ class CacheManager
         fclose($this->filePointer);
     }
 
-    /**
-     * @param $key
-     * @return mixed
-     */
-    public function get($key)
+    protected function readStorage(): array
     {
         fseek($this->filePointer, 0);
         $str = fgets($this->filePointer, $this->size);
-        $storage = unserialize($str);
 
-        if (empty($storage[$key])) return false;
-        return $storage[$key];
+        return empty($str) ? [] : unserialize($str);
     }
 
-    /**
-     * @param $key
-     * @param $value
-     * @return bool
-     */
-    public function store($key, $value)
+    protected function writeStorage(array $storage): bool
     {
-        $storage = [];
-        if ($this->size) {
-            fseek($this->filePointer, 0);
-            $str = fgets($this->filePointer, $this->size);
-            $storage = unserialize($str);
-            if (!$storage) return false;
-        }
-
-        $storage[$key] = $value;
         $str = serialize($storage);
-        fseek($this->filePointer, 0);
-        $result = fputs($this->filePointer, $str);
 
-        if (!$result) return false;
+        fseek($this->filePointer, 0);
+        if (!$result = fputs($this->filePointer, $str)) {
+            return false;
+        }
         $this->size = $result + 1;
         return true;
+    }
+
+    public function get($key)
+    {
+        $storage = $this->readStorage();
+
+        return empty($storage[$key]) ? null : $storage[$key];
+    }
+
+    public function store($key, $value)
+    {
+        $storage = $this->readStorage();
+        $storage[$key] = $value;
+        return $this->writeStorage($storage);
+    }
+
+    public function delete($key): bool
+    {
+        $storage = $this->readStorage();
+        unset($storage[$key]);
+        return $this->writeStorage($storage);
+    }
+
+    public function has($key)
+    {
+        $storage = $this->readStorage();
+        return isset($storage[$key]);
     }
 }
